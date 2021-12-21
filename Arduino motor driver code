@@ -1,6 +1,8 @@
-//we have used this code to convert degrees we recieved from the raspberry to motor functions
-//the codes 444 powers all motor's to on and waits for an command 0 makes all motor's rotate at full throtle 555 makes the motor's pause for 5 seconds and then continue
-//code 666 cuts all power to the motor's and turn the thortle to 0
+//we have used this code to convert degrees we recieved from the raspberry to motor functions.
+//the codes 444 powers all motor's to on and waits for an command 0 makes all motor's rotate at full throtle 555 makes the motor's pause for 5 seconds and then continue.
+//code 666 cuts all power to the motor's and turn the thortle to 0.
+//we also connected a led strip to display the current status green when the motor's have power, blue when it is doing the 5 second stop and go, 
+//and red when power has been cut from the motors.
 int speedl;
 int speedr; 
 char data;
