@@ -7,7 +7,7 @@ int speedl;
 int speedr; 
 char data;
 int ang;
-int motor_aan = 0;
+int motor_on = 0;
 const int ena = 2;
 const int enb = 3;
 const int m11 = 4;
@@ -30,17 +30,23 @@ void loop() {
     Serial.println(data);
     ang = data.toInt();
   }
-  if (ang < 0 && motor_aan==1) {
+  if (ang < 0 && motor_on==1) {
         speedl = 255 + ang;
         analogWrite(enb, speedl);
+        analogWrite(rgbr, 255);
+        analogWrite(rgbg, 0);
+        analogWrite(rgbb, 255);
   };
   
-  if (ang > 0 && motor_aan==1) {
+  if (ang > 0 && motor_on==1) {
         speedr = 255 - ang;
         analogWrite(ena, speedr);
+        analogWrite(rgbr, 255);
+        analogWrite(rgbg, 0);
+        analogWrite(rgbb, 255);
   };
   if (ang==444){
-    motor_aan = 1;
+    motor_on = 1;
     digitalWrite(m11, LOW);
     digitalWrite(m12, HIGH);
     digitalWrite(m21, LOW);
@@ -52,7 +58,7 @@ void loop() {
     analogWrite(rgbb, 255);
   };  
   if (ang==666){
-    motor_aan = 0;
+    motor_on = 0;
     digitalWrite(m11, LOW);
     digitalWrite(m12, LOW);
     digitalWrite(m21, LOW);
@@ -63,8 +69,8 @@ void loop() {
     analogWrite(rgbg, 255);
     analogWrite(rgbb, 255);
   };
-  if (ang==0 && motor_aan==1){
-    motor_aan = 1;
+  if (ang==0 && motor_on==1){
+    motor_on = 1;
     digitalWrite(m11, LOW);
     digitalWrite(m12, HIGH);
     digitalWrite(m21, LOW);
@@ -75,7 +81,7 @@ void loop() {
     analogWrite(rgbg, 0);
     analogWrite(rgbb, 255);
   };
-  if (ang==555 && motor_aan==1){
+  if (ang==555 && motor_on==1){
     digitalWrite(m11, LOW);
     digitalWrite(m12, LOW);
     digitalWrite(m21, LOW);
