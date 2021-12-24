@@ -1,0 +1,109 @@
+
+#include <Arduino.h>
+int speedl;
+int speedr; 
+char data;
+int ang;
+int motor_on = 0;
+const int ena = 2;
+const int enb = 3;
+const int m11 = 4;
+const int m12 = 5;
+const int m21 = 6;
+const int m22 = 7;
+const int rgbr = 8;
+const int rgbg = 9;
+const int rgbb = 10;
+
+
+void setup() {
+Serial.begin(9600);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    String data = Serial.readStringUntil('\n');
+    Serial.print("You sent me: ");
+    Serial.println(data);
+    ang = data.toInt();
+  }
+  Serial.print(ang);
+  delay(1000);
+  if (ang < 0 && motor_on==1) {
+        speedl = 255 + ang;
+        analogWrite(enb, speedl);
+        analogWrite(rgbr, 255);
+        analogWrite(rgbg, 0);
+        analogWrite(rgbb, 255);
+  };
+  
+  if (ang > 0 && motor_on==1) {
+        speedr = 255 - ang;
+        analogWrite(ena, speedr);
+        analogWrite(rgbr, 255);
+        analogWrite(rgbg, 0);
+        analogWrite(rgbb, 255);
+  };
+  if (ang==444){
+    motor_on = 1;
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, HIGH);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, HIGH);
+    analogWrite(ena, 0);
+    analogWrite(enb, 0);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 0);
+    analogWrite(rgbb, 255);
+  };  
+  if (ang==666){
+    motor_on = 0;
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, LOW);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, LOW);
+    analogWrite(ena, 0);
+    analogWrite(enb, 0);
+    analogWrite(rgbr, 0);
+    analogWrite(rgbg, 255);
+    analogWrite(rgbb, 255);
+  };
+  if (ang==0 && motor_on==1){
+    motor_on = 1;
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, HIGH);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, HIGH);
+    analogWrite(ena, 255);
+    analogWrite(enb, 255);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 0);
+    analogWrite(rgbb, 255);
+  };
+  if (ang==555 && motor_on==1){
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, LOW);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, LOW);
+    analogWrite(ena, 0);
+    analogWrite(enb, 0);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 255);
+    analogWrite(rgbb, 0);
+    delay(5000);
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, HIGH);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, HIGH);
+    analogWrite(ena, 255);
+    analogWrite(enb, 255);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 0);
+    analogWrite(rgbb, 255);
+    delay(1000);
+  };
+  Serial.print("dit is de speed:");
+  Serial.println(speedr);
+  Serial.print("dit is de speed:");
+  Serial.println(speedl);
+}
