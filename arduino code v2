@@ -1,0 +1,132 @@
+//we have used this code to convert degrees we recieved from the raspberry to motor functions.
+//the codes 444 powers all motor's to on and waits for an command 0 makes all motor's rotate at full throtle 555 makes the motor's pause for 5 seconds and then continue.
+//code 666 cuts all power to the motor's and turn the thortle to 0.
+//we also connected a led strip to display the current status green when the motor's have power, blue when it is doing the 5 second stop and go, 
+//and red when power has been cut from the motors.
+#include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
+int speedl;
+int speedr; 
+char data;
+int ang;
+int motor_on = 1;
+const int ena = 2;
+const int enb = 3;
+const int m11 = 4;
+const int m12 = 5;
+const int m21 = 6;
+const int m22 = 7;
+const int rgbr = 8;
+const int rgbg = 9;
+const int rgbb = 10;
+LiquidCrystal_I2C lcd(0x27, 16, 4);
+
+
+void setup() {
+Serial.begin(9600);
+  lcd.init(); 
+lcd.clear();
+lcd.backlight();
+lcd.home();
+lcd.print("Hackster");
+}
+
+void loop() {
+  
+  if (Serial.available() > 0) {
+    String data = Serial.readStringUntil('\n');
+    Serial.print("You sent me: ");
+    Serial.println(data);
+    ang = data.toInt();
+    
+    
+  }
+  lcd.setCursor(0,1);
+  lcd.print(ang);
+ 
+  //lcd.clear();
+  
+  if (ang < 0 && motor_on==1) {
+        
+        lcd.setCursor(0,0);
+        lcd.print("gaat naar links");
+       
+        speedl = 255 + ang;
+        analogWrite(enb, speedl);
+        analogWrite(rgbr, 255);
+        analogWrite(rgbg, 0);
+        analogWrite(rgbb, 255);
+  };
+  
+  if (ang > 0 && motor_on==1) {
+        speedr = 255 - ang;
+        lcd.setCursor(0,0);
+        lcd.print("gaat naar rechts");
+        
+        
+        
+        analogWrite(ena, speedr);
+        analogWrite(rgbr, 255);
+        analogWrite(rgbg, 0);
+        analogWrite(rgbb, 255);
+  };
+  if (ang==444){
+    
+    motor_on = 1;
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, HIGH);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, HIGH);
+    analogWrite(ena, 0);
+    analogWrite(enb, 0);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 0);
+    analogWrite(rgbb, 255);
+  };  
+  if (ang==666){
+    motor_on = 0;
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, LOW);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, LOW);
+    analogWrite(ena, 0);
+    analogWrite(enb, 0);
+    analogWrite(rgbr, 0);
+    analogWrite(rgbg, 255);
+    analogWrite(rgbb, 255);
+  };
+  if (ang==0 && motor_on==1){
+    motor_on = 1;
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, HIGH);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, HIGH);
+    analogWrite(ena, 255);
+    analogWrite(enb, 255);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 0);
+    analogWrite(rgbb, 255);
+  };
+  if (ang==555 && motor_on==1){
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, LOW);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, LOW);
+    analogWrite(ena, 0);
+    analogWrite(enb, 0);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 255);
+    analogWrite(rgbb, 0);
+    delay(5000);
+    digitalWrite(m11, LOW);
+    digitalWrite(m12, HIGH);
+    digitalWrite(m21, LOW);
+    digitalWrite(m22, HIGH);
+    analogWrite(ena, 255);
+    analogWrite(enb, 255);
+    analogWrite(rgbr, 255);
+    analogWrite(rgbg, 0);
+    analogWrite(rgbb, 255);
+    delay(1000);
+  };
+}
