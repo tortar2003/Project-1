@@ -1,0 +1,362 @@
+#include <Arduino.h>
+
+int IRsensor1 = 0; //Ir sensor pins connected to Arduino Mega board
+int IRsensor2 = 0;
+int IRsensor3 = 0;
+int IRsensor4 = 0;
+int IRsensor5 = 0;
+int IRsensormidleft;
+int IRsensormidright;
+int reading1 = 0;
+int reading2 = 0;
+int reading3 = 0;
+int reading4 = 0;
+int reading5 = 0;
+const int Asensor1 = A8;
+const int Asensor2 = A9;
+const int Asensor3 = A10;
+const int Asensor4 = A11;
+const int Asensor5 = A12;
+const int irvalue = 40;
+boolean globalstart; //Global variable for start
+
+const int directionA = 12; //Motors A are left side
+const int directionB = 13; //Motors B are right side
+
+const int PWMA = 3; //PWM pin for motors A (left side) connected to pin 3 for speed
+const int PWMB = 11; //PWM pin for motors B (right side) connected to pin 11 for speed
+
+const int brakeA = 9; //Brake pin for motors A (left side) connected to pin 9
+const int brakeB = 8; //Brake pin for motors B (right side) connected to pin 8
+
+int speedStraight = 100; //Speed of the motors at straight situation and turn /Max = 255
+int speedTurn = 10; 
+int speedOff = 0;
+int speed90 = 150;
+
+int stateIR1; //Declare global states for IR sensors
+int stateIR2; 
+int stateIR3; 
+int stateIR4; 
+int stateIR5;
+int stateIRmidleft;
+int stateIRmidright;
+
+
+const int RGBledon = 2;
+const int RGBledred = 4; //Declare pins RGB led connected on Arduino board
+const int RGBledgreen = 5;
+const int RGBledblue = 6;
+
+
+
+
+void setup() {
+  Serial.begin(9600);
+  
+  Serial.print("Program has started!");
+  Serial.println(" ");
+
+  globalstart = false; //Set the start state to LOW for reading the startvoid
+
+  pinMode(IRsensor1, INPUT); //Set the pins connected to IR module as INPUT 
+  pinMode(IRsensor2, INPUT);
+  pinMode(IRsensor3, INPUT);
+  pinMode(IRsensor4, INPUT);
+  pinMode(IRsensor5, INPUT);
+
+  pinMode(directionA, OUTPUT);
+  pinMode(directionB, OUTPUT);
+
+  pinMode(PWMA, OUTPUT);
+  pinMode(PWMB, OUTPUT);
+
+  pinMode(brakeA, OUTPUT);
+  pinMode(brakeB, OUTPUT);
+
+  pinMode(RGBledblue, OUTPUT);
+  pinMode(RGBledgreen, OUTPUT);
+  pinMode(RGBledred, OUTPUT);
+  pinMode(RGBledon, OUTPUT);
+  digitalWrite(RGBledon,HIGH);
+  digitalWrite(RGBledblue,LOW);
+  digitalWrite(RGBledgreen,LOW);
+  digitalWrite(RGBledred,LOW);
+  delay (1000);
+  digitalWrite(RGBledblue,HIGH);
+  digitalWrite(RGBledgreen,HIGH);
+  digitalWrite(RGBledred,HIGH);
+}
+void Sensor(){
+  reading1 = analogRead(Asensor1);
+  reading2 = analogRead(Asensor2);
+  reading3 = analogRead(Asensor3);
+  reading4 = analogRead(Asensor4);
+  reading5 = analogRead(Asensor5);
+  Serial.print("s1 ");
+  Serial.println(reading1);
+  Serial.print("s2 ");
+  Serial.println(reading2);
+  Serial.print("s3 ");
+  Serial.println(reading3);
+  Serial.print("s4 ");
+  Serial.println(reading4);
+  Serial.print("s5 ");
+  Serial.println(reading5);
+  if (reading2>=irvalue){
+    stateIR2=0;
+  }
+  if (reading1>=irvalue){
+    stateIR1=0;
+  }
+  if (reading3>=irvalue){
+    stateIR3=0;
+  }
+  if (reading4>=irvalue){
+    stateIR4=0;
+  }
+  if (reading5>=irvalue){
+    stateIR5=0;
+  }
+  if (reading2<irvalue){
+    stateIR2=1;
+  }
+  if (reading1<irvalue){
+    stateIR1=1;
+  }
+  if (reading3<irvalue){
+    stateIR3=1;
+  }
+  if (reading4<irvalue){
+    stateIR4=1;
+  }
+  if (reading5<irvalue){
+    stateIR5=1;
+  }
+  Serial.print("state 1 ");
+  Serial.println(stateIR1);
+  Serial.print("state 2 ");
+  Serial.println(stateIR2);
+  Serial.print("state 3 ");
+  Serial.println(stateIR3);
+  Serial.print("state 4 ");
+  Serial.println(stateIR4);
+  Serial.print("state 5 ");
+  Serial.println(stateIR5);
+}
+
+
+void start(){ //Void for a start sign
+Sensor();
+  if(stateIR1 == 1 && stateIR2 == 1 && stateIR3 == 0 && stateIR4 == 1 && stateIR5 == 1){ //Mid 1 = black
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA, HIGH);
+    digitalWrite(brakeB, LOW);
+    analogWrite(PWMA, speedStraight);
+    digitalWrite(directionA, LOW);
+    analogWrite(PWMB, speedStraight);
+    digitalWrite(directionB, HIGH);
+
+    Serial.print("The car is detecting a start sign");
+    Serial.println(" ");
+  }
+}
+
+
+void pause(){ //Void for a pause sign
+Sensor();
+  if(stateIR1 == 0 && stateIR2 == 0 && stateIR3 == 0 && stateIR4 == 0 && stateIR5 == 0){ //Statement for reading left turn 135 degrees
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,HIGH);
+    digitalWrite(RGBledblue, LOW);
+    digitalWrite(brakeA, HIGH);
+    digitalWrite(brakeB, HIGH);
+    delay(5000);
+    digitalWrite(brakeA,LOW);
+    digitalWrite(brakeB,LOW);
+    analogWrite(PWMA, speedStraight);
+    digitalWrite(directionA, HIGH); //Dir A set to HIGH goes forward
+    analogWrite(PWMB, speedStraight);
+    digitalWrite(directionB, HIGH); //Dir B set to HIGH goes forward 
+    delay(200);
+
+    Serial.print("The car is detecting a pause sign");
+    Serial.println(" ");   
+  }
+}
+
+
+void stop(){ //Void for a stop sign
+Sensor();
+  if(stateIR1 == 0 && stateIR2 == 0 && stateIR3 == 0 && stateIR4 == 0 && stateIR5 == 0){ //Statement for reading left turn 135 degrees
+    delay(300);
+    digitalWrite(RGBledred, LOW);
+    digitalWrite(RGBledgreen,HIGH);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA, HIGH);
+    digitalWrite(brakeB, HIGH);
+
+    Serial.print("The car is detecting a stop sign");
+    Serial.println(" "); 
+  }
+}
+
+
+void straight(){ //Void for going straight
+Sensor();
+  if(stateIR1 == 1 && stateIR2 == 1 && stateIR3 == 0 && stateIR4 == 1 && stateIR5 == 1){ //Statement for driving straight
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    
+    digitalWrite(brakeA,LOW);
+    digitalWrite(brakeB,LOW);
+    analogWrite(PWMA, speedStraight);
+    digitalWrite(directionA, HIGH); //Dir A set to HIGH goes forward
+    analogWrite(PWMB, speedStraight);
+    digitalWrite(directionB, HIGH); //Dir B set to HIGH goes forward 
+    
+    Serial.print("The car is detecting straight");
+    Serial.println(" ");
+  }
+} 
+
+
+void turnrightsoft(){ //Void for a soft right turn 
+Sensor();
+  if(stateIR2 == 1 && stateIR3 == 1 && stateIR4 == 0){ //Statement for reading right turn soft (goes of straight line slightly)
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA, LOW);
+    digitalWrite(brakeB, HIGH); 
+    analogWrite(PWMB, speedTurn);
+    digitalWrite(directionA, HIGH);
+
+    Serial.print("The car is detecting a soft turn right (off straight)");
+    Serial.println(" ");
+  }
+}
+
+
+void turnleftsoft(){ //Void for a soft left turn 
+Sensor();
+  if(stateIR1 == 1 && stateIR2 == 0 && stateIR3 == 1 && stateIR4 == 1 && stateIR5 == 1){ //Statement for reading left turn soft (goes of straight line slightly)
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA, HIGH);
+    digitalWrite(brakeB, LOW);
+    digitalWrite(PWMA, speedTurn);
+    digitalWrite(directionB, HIGH);
+ 
+    Serial.print("The car is detecting a soft turn left (off straight)");
+    Serial.println(" ");
+  }
+}
+
+
+void turnright90(){ //Void for right turn 90 degrees
+Sensor();
+  //if((stateIR1 == 1 && stateIR2 == 1 && stateIR3 == 0 && stateIR4 == 0 && stateIR5 == 0) || (stateIR1 == 1 && stateIR2 == 1 && stateIR3 == 1 && stateIR4 == 0 && stateIR5 == 0)){ //Statement for reading right turn 90 degrees
+ if (stateIR1 == 1 && stateIR2 == 1 && stateIR3 == 0 && stateIR4 == 0 && stateIR5 == 0){
+    delay(300);
+    Serial.print("the car is Right");
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA,LOW);
+    digitalWrite(brakeB,LOW);
+    digitalWrite(directionA, HIGH);
+    digitalWrite(directionB, LOW);
+    digitalWrite(PWMA, speed90);
+    digitalWrite(PWMB, speed90);
+
+
+    Serial.print("The car is detecting a right turn 90 degrees");
+    Serial.println(" ");
+  }
+}
+
+
+void turnleft90(){ //Void for a left turn 90 degrees
+Sensor();
+  if((stateIR1 == 0 && stateIR2 == 0 && stateIR3 == 0 && stateIR4 == 1 && stateIR5 == 1) || (stateIR1 == 0 && stateIR2 == 0 && stateIR3 == 1 && stateIR4 == 1 && stateIR5 == 1)){ //Statement for reading left turn 90 degrees
+    delay(300);
+    Serial.print("the car is Left");
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA,LOW);
+    digitalWrite(brakeB,LOW);
+    digitalWrite(directionA, LOW);
+    digitalWrite(directionB, HIGH);
+    analogWrite(PWMA, speed90);
+    analogWrite(PWMB, speed90);
+    
+    Serial.print("The car is detecting a left turn 90 degrees");
+    Serial.println(" ");  
+  }
+}
+
+
+void turnright135(){ //Void for a right turn 135 degrees
+Sensor();
+  if(stateIR1 == 1 && stateIR2 == 1 && stateIR3 == 0 && stateIR4 == 1 && stateIR5 == 0){ //Statement for reading right turn 135 degrees
+    delay(300);
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA,LOW);
+    digitalWrite(brakeB,LOW);
+    analogWrite(PWMA, speedTurn); 
+    digitalWrite(directionA, HIGH);
+    analogWrite(PWMB, speedTurn);
+    digitalWrite(directionB, LOW);
+
+    Serial.print("The car is detecting a right turn 135 degrees");
+    Serial.println(" ");
+  }
+}
+
+
+void turnleft135(){ //Void for a left turn 135 degrees
+Sensor();
+  if(stateIR1 == 0 && stateIR2 == 1 && stateIR3 == 0 && stateIR4 == 1 && stateIR5 == 1){ //Statement for reading left turn 135 degrees
+    delay(300);
+    digitalWrite(RGBledred, HIGH);
+    digitalWrite(RGBledgreen,LOW);
+    digitalWrite(RGBledblue, HIGH);
+    digitalWrite(brakeA,LOW);
+    digitalWrite(brakeB,LOW);
+    analogWrite(PWMA, speedTurn);
+    digitalWrite(directionA, LOW);
+    analogWrite(PWMB, speedTurn);
+    digitalWrite(directionB, HIGH);
+
+    Serial.print("The car is detecting a left turn 135 degrees");
+    Serial.println(" ");  
+  }
+}
+
+
+
+void loop() {
+  Sensor();
+  //while(globalstart == false){
+    //start();
+    //globalstart == true;
+ // }
+ 
+  straight();
+  turnrightsoft();
+  turnright90();
+  turnright135();
+  turnleftsoft();
+  turnleft90();
+  turnleft135();
+  pause();
+ // stop();
+}
